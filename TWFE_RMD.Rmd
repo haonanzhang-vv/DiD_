@@ -1,0 +1,121 @@
+---
+title: "TWFE Counterfacual - Wards Treated at 2017Q2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### TWFE Estimator 
+
+
+
+```{r}
+library(fect)
+library(dplyr)
+
+library(panelview)
+library(patchwork)
+
+set.seed(1234)
+```
+
+```{r}
+model_name = "SingleTreated2017Q2"
+data2017Q2 = read.csv("/Users/zhanghaonan/Desktop/MSIA/michigan/DID/Code/DiD_/0320DiD_2017Q2.csv")
+
+data2017Q2 = data2017Q2 %>% filter(creator_ward_key != '00APGD')
+data2017Q2 = data2017Q2 %>% filter(creator_ward_key != '00AGGN')
+
+data2017Q2 = data2017Q2 %>% filter(week_start_date >= "2017-01-01")
+data2017Q2$first.treat0708 = case_when(data2017Q2$Nearest0708_FWHTreatment == '2018-01-01' ~ 20180101,
+          data2017Q2$Nearest0708_FWHTreatment == '2017-01-01' ~ 20170101,
+          data2017Q2$Nearest0708_FWHTreatment == 'NT' ~ 0
+          )
+
+data2017Q2$first.treatHalfYear = case_when(data2017Q2$NearestHalfYear_FWHTreatment == '2018-07-01' ~ 20180701,
+                                     data2017Q2$NearestHalfYear_FWHTreatment == '2017-07-01' ~ 20170701,
+                                     data2017Q2$NearestHalfYear_FWHTreatment == '2016-07-01' ~ 20160701,
+                                     data2017Q2$NearestHalfYear_FWHTreatment == '2015-07-01' ~ 20150701,
+                                     data2017Q2$NearestHalfYear_FWHTreatment == 'NT' ~ 0
+)
+
+### Process tlist as numeric
+data2017Q2$week_start_date_numeric = as.numeric(stringr::str_replace_all(data2017Q2$week_start_date,"-","")) 
+data2017Q2$first.treat.start2017Q2_numeric = as.numeric(stringr::str_replace_all(data2017Q2$first.treat.start2017Q2,"-","")) 
+
+data2017Q2$first.treat.start2017Q3_numeric = as.numeric(stringr::str_replace_all(data2017Q2$first.treat.start2017Q3,"-","")) 
+### Run model 1
+out.fect1 <- fect(normal_pickup_count~ TreatmentLabel_2017Q2 + NormalUserPostCount,
+                  data = data2017Q2, index = c("creator_ward_key","week_start_date"),
+                  method = "fe", force = "two-way",se = TRUE, seed = 1234)
+
+plot(out.fect1, show.point = F, main = "Estimated ATT (FEct)", ylab = "Effect of D on Y Conditional on Normal User Post Count",
+     cex.main = 0.8, cex.lab = 0.8, cex.axis = 0.8)
+
+
+print(out.fect1)
+
+## perform diagnosis for model 0
+## equiv test
+plot(out.fect1, type = "equiv", ylim = c(-1, 1),
+     cex.legend = 0.6, main = "Testing Pre-Trend (FEct) - Model 1", cex.text = 0.8)
+
+out.fect1.p <- fect(normal_pickup_count ~ TreatmentLabel_2017Q2 + NormalUserPostCount,
+                    data = data2017Q2, index = c("creator_ward_key","week_start_date"), 
+                    force = "two-way", parallel = TRUE, se = TRUE, CV = 0,
+                    nboots = 200, placeboTest = TRUE, placebo.period = c(-2, 0))
+
+plot(out.fect1.p, cex.text = 0.8, stats = c("placebo.p","equiv.p"), 
+     main = "Estimated ATT (TWFE) of FWH on Normal C2C Pickups - Model 1")
+
+```
+
+
+```{r}
+
+data2017Q2$log_normal_pickup_count = log(data2017Q2$normal_pickup_count + 1)
+data2017Q2$log_NormalUserPostCount = log(data2017Q2$NormalUserPostCount + 1)
+
+### Run model 1 with log log -> 
+out.fect1_log <- fect(log_normal_pickup_count ~ TreatmentLabel_2017Q2 + log_NormalUserPostCount,
+                  data = data2017Q2, index = c("creator_ward_key","week_start_date"),
+                  method = "fe", force = "two-way",se = TRUE, seed = 1234)
+
+plot(out.fect1_log, show.point = F, main = "Estimated ATT (FEct)", ylab = "Effect of D on Y Conditional on Log Normal User Post Count",
+     cex.main = 0.8, cex.lab = 0.8, cex.axis = 0.8)
+
+
+print(out.fect1_log)
+
+## perform diagnosis for model 0
+## equiv test
+plot(out.fect1_log, type = "equiv", ylim = c(-1, 1),
+     cex.legend = 0.6, main = "Testing Pre-Trend (FEct) - Model 1", cex.text = 0.8)
+
+out.fect1.p_log <- fect(log_normal_pickup_count ~ TreatmentLabel_2017Q2 + log_NormalUserPostCount,
+                    data = data2017Q2, index = c("creator_ward_key","week_start_date"), 
+                    force = "two-way", parallel = TRUE, se = TRUE, CV = 0,
+                    nboots = 200, placeboTest = TRUE, placebo.period = c(-2, 0))
+
+plot(out.fect1.p_log, cex.text = 0.8, stats = c("placebo.p","equiv.p"), 
+     main = "Estimated ATT (TWFE) of FWH on Normal C2C Pickups - Model 1 Log Scale")
+
+
+```
+
+### Save the result
+
+```{r}
+
+save(out.fect1.p,file =  paste0("/Users/zhanghaonan/Desktop/MSIA/michigan/DID/Code/DiD_/Output0320/TWFE/",model_name,"_Model1Placebo.RData"))
+save(out.fect1,file =  paste0("/Users/zhanghaonan/Desktop/MSIA/michigan/DID/Code/DiD_/Output0320/TWFE/",model_name,"_Model1.RData"))
+
+save(out.fect1.p_log,file =  paste0("/Users/zhanghaonan/Desktop/MSIA/michigan/DID/Code/DiD_/Output0320/TWFE/",model_name,"_logModel1Placebo.RData"))
+save(out.fect1_log,file =  paste0("/Users/zhanghaonan/Desktop/MSIA/michigan/DID/Code/DiD_/Output0320/TWFE/",model_name,"_logModel1.RData"))
+
+
+```
+
+
