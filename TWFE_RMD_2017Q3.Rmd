@@ -25,10 +25,10 @@ set.seed(1234)
 model_name = "SingleTreated2017Q3_Raw"
 data2017Q3 = read.csv("/Users/zhanghaonan/Desktop/MSIA/michigan/DID/Code/DiD_/0320DiD_2017Q3.csv")
 
-#data2017Q3 = data2017Q3 %>% filter(creator_ward_key != '00APGD')
-#data2017Q3 = data2017Q3 %>% filter(creator_ward_key != '00AGGN')
+data2017Q3 = data2017Q3 %>% filter(creator_ward_key != '00APGD')
+data2017Q3 = data2017Q3 %>% filter(creator_ward_key != '00AGGN')
 
-#data2017Q3 = data2017Q3 %>% filter(week_start_date >= "2017-01-01")
+data2017Q3 = data2017Q3 %>% filter(week_start_date >= "2017-01-01")
 data2017Q3$first.treat0708 = case_when(data2017Q3$Nearest0708_FWHTreatment == '2018-01-01' ~ 20180101,
           data2017Q3$Nearest0708_FWHTreatment == '2017-01-01' ~ 20170101,
           data2017Q3$Nearest0708_FWHTreatment == 'NT' ~ 0
