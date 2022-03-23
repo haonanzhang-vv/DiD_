@@ -1,0 +1,118 @@
+---
+title: "2017Q3"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## For Q2 enter, we filter dataset from 2017Q1
+## For Q3 afterwards entered wards, we filter dataset from 2017Q3 04-01
+## Analysis of Single Treatment Period 2017Q3 via did package from
+## Assume they all entered treatment at the first week of 2017Q3
+
+```{r}
+library(did)
+library(dplyr)
+
+data2017Q3 = read.csv("/Users/zhanghaonan/Desktop/MSIA/michigan/DID/Code/DiD_/0323DiD_2017Q3.csv")
+
+
+```
+
+### Fit did model
+
+```{r}
+out_2017Q3_0 <- att_gt(yname = "normal_pickup_count",
+              gname = "week_number_first.treat.start2017Q3",
+              idname = "ward_key_id",
+              tname = "week_number",
+              xformla = ~1,
+              data = data2017Q3,
+              control_group = 'notyettreated',
+              est_method = "reg",
+              allow_unbalanced_panel = TRUE,
+              bstrap = TRUE
+
+)
+summary(out_2017Q3_0)
+ggdid(out_2017Q3_0, ylim = c(-.25,.1),xgap = 8)
+
+es_2017Q3_0 <- aggte(out_2017Q3_0, type = "dynamic",na.rm = TRUE,bstrap = TRUE,cband = TRUE)
+summary(es_2017Q3_0)
+
+ggdid(es_2017Q3_0,xgap = 8)
+
+
+group_effects_2017Q3_0 <- aggte(out_2017Q3_0, type = "group",na.rm = TRUE)
+summary(group_effects_2017Q3_0)
+
+ggdid(group_effects_2017Q3_0,xgap = 8)
+
+```
+
+```{r}
+out_2017Q3_1 <- att_gt(yname = "normal_pickup_count",
+              gname = "week_number_first.treat.start2017Q3",
+              idname = "ward_key_id",
+              tname = "week_number",
+              xformla = ~NormalUserPostCount,
+              data = data2017Q3,
+              control_group = 'notyettreated',
+              est_method = "reg",
+              allow_unbalanced_panel = TRUE,
+              bstrap = TRUE
+
+)
+summary(out_2017Q3_1)
+ggdid(out_2017Q3_1, ylim = c(-.25,.1),xgap = 8)
+
+es_2017Q3_1 <- aggte(out_2017Q3_1, type = "dynamic",na.rm = TRUE,bstrap = TRUE,cband = TRUE)
+summary(es_2017Q3_1)
+
+ggdid(es_2017Q3_1,xgap = 8)
+
+
+group_effects_2017Q3_1 <- aggte(out_2017Q3_1, type = "group",na.rm = TRUE)
+summary(group_effects_2017Q3_1)
+
+ggdid(group_effects_2017Q3_1,xgap = 8)
+
+```
+
+
+```{r}
+out_2017Q3_2 <- att_gt(yname = "normal_pickup_count",
+              gname = "week_number_first.treat.start2017Q3",
+              idname = "ward_key_id",
+              tname = "week_number",
+              xformla = ~NormalUserPostCount,
+              data = data2017Q3,
+              control_group = 'notyettreated',
+              est_method = "reg",
+              allow_unbalanced_panel = TRUE,
+              bstrap = TRUE
+
+)
+summary(out_2017Q3_2)
+ggdid(out_2017Q3_2, ylim = c(-.25,.1),xgap = 8)
+
+es_2017Q3_2 <- aggte(out_2017Q3_2, type = "dynamic",na.rm = TRUE,bstrap = TRUE,cband = TRUE)
+summary(es_2017Q3_2)
+
+ggdid(es_2017Q3_2,xgap = 8)
+
+
+group_effects_2017Q3_2 <- aggte(out_2017Q3_2, type = "group",na.rm = TRUE)
+summary(group_effects_2017Q3_2)
+
+ggdid(group_effects_2017Q3_2,xgap = 8)
+
+```
+
+
+
