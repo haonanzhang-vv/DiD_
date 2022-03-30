@@ -1,0 +1,118 @@
+---
+title: "DiD_MonthlyData_QuarterGroup"
+output:
+  word_document: default
+  html_document: default
+fig_width: 12 
+fig_height: 9 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+### Examine the result at monthly granular data with treatment group in quarter
+
+```{r}
+library(did)
+library(dplyr)
+
+dataDiD_Full = read.csv("/Users/zhanghaonan/Desktop/MSIA/michigan/DID/Code/DiD_/0323DiD_monthly_Full.csv")
+
+
+```
+
+### Fit did model
+
+```{r,fig.height = 12, fig.width = 9}
+
+out_DiD_Full_0 <- att_gt(yname = "normal_pickup_count",
+              gname = "month_numberGroup_QuarterEarly",
+              idname = "ward_key_id",
+              tname = "month_number",
+              xformla = ~1,
+              data = dataDiD_Full,
+              control_group = 'notyettreated',
+              est_method = "reg",
+              allow_unbalanced_panel = TRUE,
+              bstrap = TRUE
+
+)
+summary(out_DiD_Full_0)
+ggdid(out_DiD_Full_0)
+
+es_DiD_Full_0 <- aggte(out_DiD_Full_0, type = "dynamic",na.rm = TRUE,bstrap = TRUE,cband = TRUE)
+summary(es_DiD_Full_0)
+
+ggdid(es_DiD_Full_0,xgap = 8)
+
+
+group_effects_DiD_Full_0 <- aggte(out_DiD_Full_0, type = "group",na.rm = TRUE)
+summary(group_effects_DiD_Full_0)
+
+ggdid(group_effects_DiD_Full_0,xgap = 8)
+
+```
+
+```{r, fig.height = 12, fig.width = 9}
+out_DiD_Full_1 <- att_gt(yname = "normal_pickup_count",
+              gname = "month_numberGroup_QuarterEarly",
+              idname = "ward_key_id",
+              tname = "month_number",
+              xformla = ~NormalUserPostCount,
+              data = dataDiD_Full,
+              control_group = 'notyettreated',
+              est_method = "reg",
+              allow_unbalanced_panel = TRUE,
+              bstrap = TRUE
+
+)
+summary(out_DiD_Full_1)
+ggdid(out_DiD_Full_1)
+
+es_DiD_Full_1 <- aggte(out_DiD_Full_1, type = "dynamic",na.rm = TRUE,bstrap = TRUE,cband = TRUE)
+summary(es_DiD_Full_1)
+
+ggdid(es_DiD_Full_1,xgap = 8)
+
+
+group_effects_DiD_Full_1 <- aggte(out_DiD_Full_1, type = "group",na.rm = TRUE)
+summary(group_effects_DiD_Full_1)
+
+ggdid(group_effects_DiD_Full_1,xgap = 8)
+
+```
+
+
+```{r, fig.height = 12, fig.width = 9}
+out_DiD_Full_2 <- att_gt(yname = "normal_pickup_count",
+              gname = "month_numberGroup_QuarterDelay",
+              idname = "ward_key_id",
+              tname = "month_number",
+              xformla = ~NormalUserPostCount,
+              data = dataDiD_Full,
+              control_group = 'notyettreated',
+              est_method = "reg",
+              allow_unbalanced_panel = TRUE,
+              bstrap = TRUE
+
+)
+summary(out_DiD_Full_2)
+ggdid(out_DiD_Full_2)
+
+es_DiD_Full_2 <- aggte(out_DiD_Full_2, type = "dynamic",na.rm = TRUE,bstrap = TRUE,cband = TRUE)
+summary(es_DiD_Full_2)
+
+ggdid(es_DiD_Full_2,xgap = 8)
+
+
+group_effects_DiD_Full_2 <- aggte(out_DiD_Full_2, type = "group",na.rm = TRUE)
+summary(group_effects_DiD_Full_2)
+
+ggdid(group_effects_DiD_Full_2,xgap = 8)
+
+```
+
+
+
